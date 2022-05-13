@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: .
+      target: exec
+    image: cj:latest
+    ports:
+      - "8080:8080"
+    env_file: resources/config/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: technopark-dbms
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root -d technopark-dbms" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  default:
+    name: api
+    external: true

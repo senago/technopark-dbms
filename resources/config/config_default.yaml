@@ -1,0 +1,24 @@
+version: 1.0.0
+
+service:
+  bind:
+    address: 0.0.0.0
+    port: 8080
+  shutdown_timeout: 10
+
+  jwt_ttl: 604800
+  jwt_secret: somesecretstringchangemeplease
+
+  csrf_ttl: 604800
+  csrf_secret: somesecretstringchangemeplease
+
+  scheme: http
+  host: 127.0.0.1
+  port: 8080
+  base_url: 127.0.0.1:8080/api
+
+logging:
+  level: debug
+
+db:
+  connection_string: postgres://root:rootpassword@postgres:5432/technopark-dbms
