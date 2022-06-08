@@ -3,7 +3,9 @@ package api
 import (
 	"context"
 
+	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/senago/technopark-dbms/internal/api/controllers"
 	"github.com/senago/technopark-dbms/internal/customtypes"
@@ -24,13 +26,17 @@ func (svc *APIService) Shutdown(ctx context.Context) error {
 
 func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APIService, error) {
 	svc := &APIService{
-		log:    log,
-		router: fiber.New(),
+		log: log,
+		router: fiber.New(fiber.Config{
+			JSONEncoder: sonic.Marshal,
+			JSONDecoder: sonic.Unmarshal,
+		}),
 	}
 
 	controllersRegistry := controllers.NewRegistry(log, dbConn)
 
 	svc.router.Use(recover.New())
+	svc.router.Use(logger.New())
 
 	svc.router.Post("/user/:nickname/create", controllersRegistry.UserController.CreateUser)
 
