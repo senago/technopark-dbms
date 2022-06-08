@@ -1,7 +1,7 @@
-package dto
+package core
 
-type CreateUserRequest struct {
-	Nickname string `path:"nickname"`
+type User struct {
+	Nickname string `json:"nickname"`
 	Fullname string `json:"fullname"`
 	About    string `json:"about"`
 	Email    string `json:"email"`
