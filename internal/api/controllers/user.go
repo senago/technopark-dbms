@@ -33,6 +33,17 @@ func (c *UserController) CreateUser(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(response)
 }
 
+func (c *UserController) GetUserProfile(ctx *fiber.Ctx) error {
+	request := &dto.GetUserProfileRequest{Nickname: ctx.Params("nickname")}
+
+	response, err := c.registry.UserService.GetUserProfile(context.Background(), request)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(response)
+}
+
 func NewUserController(log *customtypes.Logger, registry *service.Registry) *UserController {
 	return &UserController{log: log, registry: registry}
 }

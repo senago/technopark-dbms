@@ -3,6 +3,9 @@ package service
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"net/http"
 
 	"github.com/senago/technopark-dbms/internal/constants"
 	"github.com/senago/technopark-dbms/internal/customtypes"
@@ -13,6 +16,7 @@ import (
 
 type UserService interface {
 	CreateUser(ctx context.Context, request *dto.CreateUserRequest) (interface{}, error)
+	GetUserProfile(ctx context.Context, request *dto.GetUserProfileRequest) (*dto.GetUserProfileResponse, error)
 }
 
 type userServiceImpl struct {
@@ -33,6 +37,17 @@ func (svc *userServiceImpl) CreateUser(ctx context.Context, request *dto.CreateU
 		return nil, err
 	}
 
+	return user, nil
+}
+
+func (svc *userServiceImpl) GetUserProfile(ctx context.Context, request *dto.GetUserProfileRequest) (*dto.GetUserProfileResponse, error) {
+	user, err := svc.db.UserRepository.GetUserByNickname(ctx, request.Nickname)
+	if err != nil {
+		if errors.Is(err, constants.ErrDBNotFound) {
+			return nil, constants.NewCodedError(fmt.Sprintf("Can't find user by nickname: %s", request.Nickname), http.StatusNotFound)
+		}
+		return nil, err
+	}
 	return user, nil
 }
 

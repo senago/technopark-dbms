@@ -35,13 +35,13 @@ func (repo *userRepositoryImpl) CreateUser(ctx context.Context, user *core.User)
 func (repo *userRepositoryImpl) GetUserByEmail(ctx context.Context, email string) (*core.User, error) {
 	user := &core.User{}
 	err := repo.dbConn.QueryRow(ctx, queryGetUserByEmail, email).Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
-	return user, err
+	return user, wrapErr(err)
 }
 
 func (repo *userRepositoryImpl) GetUserByNickname(ctx context.Context, nickname string) (*core.User, error) {
 	user := &core.User{}
 	err := repo.dbConn.QueryRow(ctx, queryGetUserByNickname, nickname).Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email)
-	return user, err
+	return user, wrapErr(err)
 }
 
 func (repo *userRepositoryImpl) GetUsersByEmailOrNickname(ctx context.Context, email, nickname string) ([]*core.User, error) {

@@ -8,7 +8,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/senago/technopark-dbms/internal/api/controllers"
+	"github.com/senago/technopark-dbms/internal/constants"
 	"github.com/senago/technopark-dbms/internal/customtypes"
+	"github.com/senago/technopark-dbms/internal/model/dto"
 )
 
 type APIService struct {
@@ -30,6 +32,15 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 		router: fiber.New(fiber.Config{
 			JSONEncoder: sonic.Marshal,
 			JSONDecoder: sonic.Unmarshal,
+			ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+				code := fiber.StatusInternalServerError
+				if e, ok := err.(*fiber.Error); ok {
+					code = e.Code
+				} else if e, ok := err.(*constants.CodedError); ok {
+					code = e.Code()
+				}
+				return ctx.Status(code).JSON(&dto.ErrorResponse{Message: err.Error()})
+			},
 		}),
 	}
 
@@ -39,6 +50,7 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 	svc.router.Use(logger.New())
 
 	svc.router.Post("/user/:nickname/create", controllersRegistry.UserController.CreateUser)
+	svc.router.Get("/user/:nickname/profile", controllersRegistry.UserController.GetUserProfile)
 
 	return svc, nil
 }
