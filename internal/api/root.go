@@ -46,12 +46,12 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 
 	controllersRegistry := controllers.NewRegistry(log, dbConn)
 
-	svc.router.Use(recover.New())
-	svc.router.Use(logger.New())
+	// TODO: Remove log for better performance
+	api := svc.router.Group("/api", recover.New(), logger.New())
 
-	svc.router.Post("/user/:nickname/create", controllersRegistry.UserController.CreateUser)
-	svc.router.Get("/user/:nickname/profile", controllersRegistry.UserController.GetUserProfile)
-	svc.router.Post("/user/:nickname/profile", controllersRegistry.UserController.UpdateUserProfile)
+	api.Post("/user/:nickname/create", controllersRegistry.UserController.CreateUser)
+	api.Get("/user/:nickname/profile", controllersRegistry.UserController.GetUserProfile)
+	api.Post("/user/:nickname/profile", controllersRegistry.UserController.UpdateUserProfile)
 
 	return svc, nil
 }
