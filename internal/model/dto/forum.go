@@ -16,3 +16,10 @@ type GetForumThreadsRequest struct {
 	Since string `query:"since"`
 	Desc  bool   `query:"desc"`
 }
+
+type GetForumUsersRequest struct {
+	Slug  string `path:"slug"`
+	Limit int64  `query:"limit"`
+	Since string `query:"since"`
+	Desc  bool   `query:"desc"`
+}

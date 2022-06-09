@@ -108,19 +108,21 @@ func NewForumRepository(dbConn *customtypes.DBConn) (*forumRepositoryImpl, error
 }
 
 func constructGetForumUsersQuery(limit int64, since string, desc bool) string {
-	query := "SELECT u.nickname, u.fullname, u.about, u.email from forum_users u where u.forum = $1"
+	query := "SELECT u.nickname, u.fullname, u.about, u.email from forum_users u where u.forum = $1 "
 
-	if desc && since != "" {
-		query += fmt.Sprintf(" and u.nickname < '%s'", since)
-	} else if since != "" {
-		query += fmt.Sprintf(" and u.nickname > '%s'", since)
+	if len(since) > 0 {
+		if desc {
+			query += fmt.Sprintf("and u.nickname < '%s' ", since)
+		} else {
+			query += fmt.Sprintf("and u.nickname > '%s' ", since)
+		}
 	}
 
-	query += " ORDER BY u.nickname"
+	query += "ORDER BY u.nickname "
 	if desc {
-		query += " desc"
+		query += "DESC "
 	}
-	query += fmt.Sprintf(" LIMIT %d", limit)
+	query += fmt.Sprintf("LIMIT %d ", limit)
 
 	return query
 }

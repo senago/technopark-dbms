@@ -53,6 +53,19 @@ func (c *ForumController) GetForumThreads(ctx *fiber.Ctx) error {
 	return ctx.Status(response.Code).JSON(response.Data)
 }
 
+func (c *ForumController) GetForumUsers(ctx *fiber.Ctx) error {
+	limit, _ := strconv.ParseInt(ctx.Query("limit", "100"), 10, 64)
+	desc, _ := strconv.ParseBool(ctx.Query("desc"))
+	request := &dto.GetForumUsersRequest{Slug: ctx.Params("slug"), Limit: limit, Since: ctx.Query("since"), Desc: desc}
+
+	response, err := c.registry.ForumService.GetForumUsers(context.Background(), request)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(response.Code).JSON(response.Data)
+}
+
 func NewForumController(log *customtypes.Logger, registry *service.Registry) *ForumController {
 	return &ForumController{log: log, registry: registry}
 }
