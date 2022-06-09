@@ -13,6 +13,8 @@ const (
 	queryGetUserByEmail            = "SELECT nickname, fullname, about, email FROM users where email = $1;"
 	queryGetUserByNickname         = "SELECT nickname, fullname, about, email FROM users where nickname = $1;"
 	queryGetUsersByEmailOrNickname = "SELECT nickname, fullname, about, email FROM users WHERE email = $1 OR nickname = $2;"
+
+	queryUpdateUser = "UPDATE users SET fullname = COALESCE(NULLIF(TRIM($1), ''), fullname), about = COALESCE(NULLIF(TRIM($2), ''), about), email = COALESCE(NULLIF(TRIM($3), ''), email) where nickname = $4 RETURNING fullname, about, email;"
 )
 
 type UserRepository interface {
@@ -21,6 +23,8 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (*core.User, error)
 	GetUserByNickname(ctx context.Context, nickname string) (*core.User, error)
 	GetUsersByEmailOrNickname(ctx context.Context, email, nickname string) ([]*core.User, error)
+
+	UpdateUser(ctx context.Context, user *core.User) (*core.User, error)
 }
 
 type userRepositoryImpl struct {
@@ -61,6 +65,14 @@ func (repo *userRepositoryImpl) GetUsersByEmailOrNickname(ctx context.Context, e
 	}
 
 	return users, nil
+}
+
+func (repo *userRepositoryImpl) UpdateUser(ctx context.Context, user *core.User) (*core.User, error) {
+	updatedUser := &core.User{Nickname: user.Nickname}
+	if err := repo.dbConn.QueryRow(ctx, queryUpdateUser, user.Fullname, user.About, user.Email, user.Nickname).Scan(&updatedUser.Fullname, &updatedUser.About, &updatedUser.Email); err != nil {
+		return nil, wrapErr(err)
+	}
+	return updatedUser, nil
 }
 
 // NewUserRepository creates a new instance of userRepositoryImpl

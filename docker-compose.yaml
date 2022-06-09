@@ -6,7 +6,7 @@ services:
       target: exec
     image: cj:latest
     ports:
-      - "8080:8080"
+      - "5000:8080"
     env_file: resources/config/.env
     depends_on:
       postgres:

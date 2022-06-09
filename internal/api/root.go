@@ -51,6 +51,7 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 
 	svc.router.Post("/user/:nickname/create", controllersRegistry.UserController.CreateUser)
 	svc.router.Get("/user/:nickname/profile", controllersRegistry.UserController.GetUserProfile)
+	svc.router.Post("/user/:nickname/profile", controllersRegistry.UserController.UpdateUserProfile)
 
 	return svc, nil
 }

@@ -5,6 +5,8 @@ go 1.18
 require (
 	github.com/bytedance/sonic v1.3.0
 	github.com/gofiber/fiber/v2 v2.33.0
+	github.com/jackc/pgconn v1.12.1
+	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/spf13/viper v1.11.0
 	go.uber.org/zap v1.21.0
@@ -16,7 +18,6 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.12.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.0 // indirect

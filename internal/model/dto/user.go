@@ -14,3 +14,10 @@ type GetUserProfileRequest struct {
 }
 
 type GetUserProfileResponse = core.User
+
+type UpdateUserProfileRequest struct {
+	Nickname string `path:"nickname"`
+	Fullname string `json:"fullname"`
+	About    string `json:"about"`
+	Email    string `json:"email"`
+}

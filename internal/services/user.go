@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/senago/technopark-dbms/internal/constants"
 	"github.com/senago/technopark-dbms/internal/customtypes"
 	"github.com/senago/technopark-dbms/internal/db"
@@ -17,6 +19,7 @@ import (
 type UserService interface {
 	CreateUser(ctx context.Context, request *dto.CreateUserRequest) (interface{}, error)
 	GetUserProfile(ctx context.Context, request *dto.GetUserProfileRequest) (*dto.GetUserProfileResponse, error)
+	UpdateUserProfile(ctx context.Context, request *dto.UpdateUserProfileRequest) (interface{}, error)
 }
 
 type userServiceImpl struct {
@@ -49,6 +52,23 @@ func (svc *userServiceImpl) GetUserProfile(ctx context.Context, request *dto.Get
 		return nil, err
 	}
 	return user, nil
+}
+
+func (svc *userServiceImpl) UpdateUserProfile(ctx context.Context, request *dto.UpdateUserProfileRequest) (interface{}, error) {
+	user := &core.User{Nickname: request.Nickname, Fullname: request.Fullname, About: request.About, Email: request.Email}
+	updatedUser, err := svc.db.UserRepository.UpdateUser(ctx, user)
+	if err != nil {
+		if errors.Is(err, constants.ErrDBNotFound) {
+			return nil, constants.NewCodedError(fmt.Sprintf("Can't find user by nickname: %s", request.Nickname), http.StatusNotFound)
+		} else {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+				return nil, constants.NewCodedError(fmt.Sprintf("This email is already registered by user: %s", user.Nickname), http.StatusConflict)
+			}
+		}
+		return nil, err
+	}
+	return updatedUser, nil
 }
 
 func NewUserService(log *customtypes.Logger, db *db.Repository) UserService {

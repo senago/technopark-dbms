@@ -11,5 +11,6 @@ func wrapErr(err error) error {
 	if errors.Is(err, pgx.ErrNoRows) {
 		return constants.ErrDBNotFound
 	}
+
 	return err
 }
