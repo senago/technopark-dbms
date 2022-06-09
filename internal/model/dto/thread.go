@@ -10,3 +10,8 @@ type CreateForumThreadRequest struct {
 	Slug    string    `json:"slug"`
 	Created time.Time `json:"created,omitempty"`
 }
+
+type UpdateVoteRequest struct {
+	Nickname string `json:"nickname"`
+	Voice    int64  `json:"voice"`
+}

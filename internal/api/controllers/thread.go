@@ -28,6 +28,21 @@ func (c *ForumThreadController) CreateForumThread(ctx *fiber.Ctx) error {
 	return ctx.Status(response.Code).JSON(response.Data)
 }
 
+func (c *ForumThreadController) UpdateVote(ctx *fiber.Ctx) error {
+	request := &dto.UpdateVoteRequest{}
+	if err := Bind(ctx, request); err != nil {
+		return err
+	}
+
+	slugOrID := ctx.Params("slug_or_id")
+	response, err := c.registry.ForumThreadService.UpdateVote(context.Background(), slugOrID, request)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(response.Code).JSON(response.Data)
+}
+
 func NewForumThreadController(log *customtypes.Logger, registry *service.Registry) *ForumThreadController {
 	return &ForumThreadController{log: log, registry: registry}
 }

@@ -60,7 +60,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS votes (
 
 CREATE OR REPLACE FUNCTION set_threads_votes() RETURNS TRIGGER AS $$
   BEGIN
-    UPDATE threads SET votes = votes + NEW.voice WHERE id = NEW.thread_id;
+    UPDATE threads SET votes = votes + NEW.voice WHERE id = NEW.thread;
     RETURN NEW;
   END;
 $$ LANGUAGE plpgsql;
@@ -70,7 +70,7 @@ CREATE OR REPLACE TRIGGER insert_votes AFTER INSERT ON votes FOR EACH ROW EXECUT
 
 CREATE OR REPLACE FUNCTION update_threads_votes() RETURNS TRIGGER AS $$
   BEGIN
-    UPDATE threads SET votes = votes + NEW.voice - OLD.voice WHERE id = NEW.thread_id;
+    UPDATE threads SET votes = votes + NEW.voice - OLD.voice WHERE id = NEW.thread;
     RETURN NEW;
   END;
 $$ LANGUAGE plpgsql;

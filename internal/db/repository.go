@@ -9,6 +9,7 @@ type Repository struct {
 	ForumRepository       ForumRepository
 	ForumThreadRepository ForumThreadRepository
 	PostsRepository       PostsRepository
+	VotesRepository       VotesRepository
 }
 
 func NewRepository(dbConn *customtypes.DBConn) (*Repository, error) {
@@ -31,6 +32,11 @@ func NewRepository(dbConn *customtypes.DBConn) (*Repository, error) {
 	}
 
 	repository.PostsRepository, err = NewPostsRepository(dbConn)
+	if err != nil {
+		return nil, err
+	}
+
+	repository.VotesRepository, err = NewVotesRepository(dbConn)
 	if err != nil {
 		return nil, err
 	}
