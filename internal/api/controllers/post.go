@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/senago/technopark-dbms/internal/customtypes"
@@ -23,6 +24,21 @@ func (c *PostsController) CreatePosts(ctx *fiber.Ctx) error {
 
 	slugOrID := ctx.Params("slug_or_id")
 	response, err := c.registry.PostsService.CreatePosts(context.Background(), slugOrID, posts)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(response.Code).JSON(response.Data)
+}
+
+func (c *PostsController) GetPosts(ctx *fiber.Ctx) error {
+	slugOrID := ctx.Params("slug_or_id")
+	sort := ctx.Query("sort", "flat")
+	since, _ := strconv.ParseInt(ctx.Query("since", "-1"), 10, 64)
+	desc, _ := strconv.ParseBool(ctx.Query("desc"))
+	limit, _ := strconv.ParseInt(ctx.Query("limit", "100"), 10, 64)
+
+	response, err := c.registry.PostsService.GetPosts(context.Background(), slugOrID, sort, since, desc, limit)
 	if err != nil {
 		return err
 	}

@@ -17,6 +17,7 @@ import (
 
 type PostsService interface {
 	CreatePosts(ctx context.Context, slugOrID string, posts []*dto.PostData) (*dto.Response, error)
+	GetPosts(ctx context.Context, slugOrID string, sort string, since int64, desc bool, limit int64) (*dto.Response, error)
 }
 
 type postsServiceImpl struct {
@@ -73,6 +74,42 @@ func (svc *postsServiceImpl) CreatePosts(ctx context.Context, slugOrID string, p
 	}
 
 	return &dto.Response{Data: insertedPosts, Code: http.StatusCreated}, nil
+}
+
+func (svc *postsServiceImpl) GetPosts(ctx context.Context, slugOrID string, sort string, since int64, desc bool, limit int64) (*dto.Response, error) {
+	id, err := strconv.Atoi(slugOrID)
+	if err != nil {
+		if thread, err := svc.db.ForumThreadRepository.GetForumThreadBySlug(ctx, slugOrID); err != nil {
+			if errors.Is(err, constants.ErrDBNotFound) {
+				return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find thread forum by slug: %s", slugOrID)}, Code: http.StatusNotFound}, nil
+			}
+		} else {
+			id = int(thread.ID)
+		}
+	}
+
+	if _, err := svc.db.ForumThreadRepository.GetForumThreadByID(ctx, int64(id)); err != nil {
+		if errors.Is(err, constants.ErrDBNotFound) {
+			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find thread forum by id: %d", id)}, Code: http.StatusNotFound}, nil
+		}
+	}
+
+	var posts []*core.Post
+	switch sort {
+	case "flat":
+		posts, err = svc.db.PostsRepository.GetPostsFlat(ctx, id, since, desc, limit)
+	case "tree":
+		posts, err = svc.db.PostsRepository.GetPostsTree(ctx, id, since, desc, limit)
+	case "parent_tree":
+		posts, err = svc.db.PostsRepository.GetPostsParentTree(ctx, id, since, desc, limit)
+	default:
+		posts, err = svc.db.PostsRepository.GetPostsFlat(ctx, id, since, desc, limit)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.Response{Data: posts, Code: http.StatusOK}, nil
 }
 
 func NewPostsService(log *customtypes.Logger, db *db.Repository) PostsService {
