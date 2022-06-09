@@ -10,6 +10,7 @@ type Registry struct {
 	UserController        *UserController
 	ForumController       *ForumController
 	ForumThreadController *ForumThreadController
+	PostsController       *PostsController
 }
 
 func NewRegistry(log *customtypes.Logger, dbConn *customtypes.DBConn) *Registry {
@@ -24,6 +25,7 @@ func NewRegistry(log *customtypes.Logger, dbConn *customtypes.DBConn) *Registry 
 	registry.UserController = NewUserController(log, serviceRegistry)
 	registry.ForumController = NewForumController(log, serviceRegistry)
 	registry.ForumThreadController = NewForumThreadController(log, serviceRegistry)
+	registry.PostsController = NewPostsController(log, serviceRegistry)
 
 	return registry
 }
