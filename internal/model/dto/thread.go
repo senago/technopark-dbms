@@ -15,3 +15,8 @@ type UpdateVoteRequest struct {
 	Nickname string `json:"nickname"`
 	Voice    int64  `json:"voice"`
 }
+
+type UpdateForumThreadRequest struct {
+	Title   string `json:"title"`
+	Message string `json:"message"`
+}
