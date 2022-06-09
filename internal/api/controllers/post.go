@@ -46,6 +46,18 @@ func (c *PostsController) GetPosts(ctx *fiber.Ctx) error {
 	return ctx.Status(response.Code).JSON(response.Data)
 }
 
+func (c *PostsController) GetPostDetails(ctx *fiber.Ctx) error {
+	id, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	request := &dto.GetPostDetailsRequest{ID: id, Related: ctx.Query("related")}
+
+	response, err := c.registry.PostsService.GetPostDetails(context.Background(), request)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(response.Code).JSON(response.Data)
+}
+
 func NewPostsController(log *customtypes.Logger, registry *service.Registry) *PostsController {
 	return &PostsController{log: log, registry: registry}
 }

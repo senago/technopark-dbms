@@ -18,6 +18,7 @@ import (
 type PostsService interface {
 	CreatePosts(ctx context.Context, slugOrID string, posts []*dto.PostData) (*dto.Response, error)
 	GetPosts(ctx context.Context, slugOrID string, sort string, since int64, desc bool, limit int64) (*dto.Response, error)
+	GetPostDetails(ctx context.Context, request *dto.GetPostDetailsRequest) (*dto.Response, error)
 }
 
 type postsServiceImpl struct {
@@ -110,6 +111,17 @@ func (svc *postsServiceImpl) GetPosts(ctx context.Context, slugOrID string, sort
 	}
 
 	return &dto.Response{Data: posts, Code: http.StatusOK}, nil
+}
+
+func (svc *postsServiceImpl) GetPostDetails(ctx context.Context, request *dto.GetPostDetailsRequest) (*dto.Response, error) {
+	postDetails, err := svc.db.PostsRepository.GetPostDetails(ctx, request.ID, request.Related)
+	if err != nil {
+		if errors.Is(err, constants.ErrDBNotFound) {
+			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find post by id: %d", request.ID)}, Code: http.StatusNotFound}, nil
+		}
+		return nil, err
+	}
+	return &dto.Response{Data: postDetails, Code: http.StatusOK}, nil
 }
 
 func NewPostsService(log *customtypes.Logger, db *db.Repository) PostsService {

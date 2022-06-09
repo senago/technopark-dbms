@@ -55,5 +55,7 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 	api.Get("/thread/:slug_or_id/posts", controllersRegistry.PostsController.GetPosts)
 	api.Post("/thread/:slug_or_id/details", controllersRegistry.ForumThreadController.UpdateForumThread)
 
+	api.Get("/post/:id/details", controllersRegistry.PostsController.GetPostDetails)
+
 	return svc, nil
 }

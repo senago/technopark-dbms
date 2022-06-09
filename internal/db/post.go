@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -13,6 +14,11 @@ import (
 
 const (
 	queryCheckPostParent = "SELECT thread FROM posts WHERE id = $1;"
+
+	queryGetPost       = "SELECT id, parent, author, message, is_edited, forum, thread, created FROM posts WHERE id = $1;"
+	queryGetPostAuthor = "SELECT a.nickname, a.fullname, a.about, a.email FROM posts JOIN users a on a.nickname = post.author WHERE post.id = $1;"
+	queryGetPostThread = "SELECT th.id, th.title, th.author, th.forum, th.message, th.votes, th.slug, th.created FROM posts JOIN threads th ON th.id = post.thread WHERE post.id = $1;"
+	queryGetPostForum  = "SELECT f.title, f.users_nickname, f.slug, f.posts, f.threads FROM posts JOIN forums f ON f.slug = post.forum WHERE post.id = $1;"
 )
 
 type PostsRepository interface {
@@ -22,6 +28,7 @@ type PostsRepository interface {
 	GetPostsFlat(ctx context.Context, id int, since int64, desc bool, limit int64) ([]*core.Post, error)
 	GetPostsTree(ctx context.Context, id int, since int64, desc bool, limit int64) ([]*core.Post, error)
 	GetPostsParentTree(ctx context.Context, id int, since int64, desc bool, limit int64) ([]*core.Post, error)
+	GetPostDetails(ctx context.Context, id int64, related string) (*dto.PostDetails, error)
 }
 
 type postsRepositoryImpl struct {
@@ -196,6 +203,48 @@ func (repo *postsRepositoryImpl) GetPostsParentTree(ctx context.Context, id int,
 	}
 
 	return posts, nil
+}
+
+func (repo *postsRepositoryImpl) GetPostDetails(ctx context.Context, id int64, related string) (*dto.PostDetails, error) {
+	postDetails := &dto.PostDetails{}
+	for _, arg := range strings.Split(related, ",") {
+		switch arg {
+		case "user":
+			author := &core.User{}
+			err := repo.dbConn.QueryRow(ctx, queryGetPostAuthor, id).Scan(&author.Nickname, &author.Fullname, &author.About, &author.Email)
+			if err != nil {
+				return nil, wrapErr(err)
+			}
+
+			postDetails.Author = author
+		case "thread":
+			thread := &core.Thread{}
+			err := repo.dbConn.QueryRow(ctx, queryGetPostThread, id).
+				Scan(&thread.ID, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created)
+			if err != nil {
+				return nil, wrapErr(err)
+			}
+
+			postDetails.Thread = thread
+		case "forum":
+			forum := &core.Forum{}
+			err := repo.dbConn.QueryRow(ctx, queryGetPostForum, id).Scan(&forum.Title, &forum.User, &forum.Slug, &forum.Posts, &forum.Threads)
+			if err != nil {
+				return nil, wrapErr(err)
+			}
+			postDetails.Forum = forum
+		}
+	}
+
+	post := &core.Post{}
+	err := repo.dbConn.QueryRow(ctx, queryGetPost, id).
+		Scan(&post.ID, &post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread, &post.Created)
+	if err != nil {
+		return nil, wrapErr(err)
+	}
+	postDetails.Post = post
+
+	return postDetails, nil
 }
 
 func NewPostsRepository(dbConn *customtypes.DBConn) (*postsRepositoryImpl, error) {
