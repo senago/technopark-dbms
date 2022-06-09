@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/senago/technopark-dbms/internal/constants"
 	"github.com/senago/technopark-dbms/internal/customtypes"
 	"github.com/senago/technopark-dbms/internal/model/dto"
 	service "github.com/senago/technopark-dbms/internal/services"
@@ -23,13 +22,10 @@ func (c *UserController) CreateUser(ctx *fiber.Ctx) error {
 
 	response, err := c.registry.UserService.CreateUser(context.Background(), request)
 	if err != nil {
-		if ce, ok := err.(*constants.CodedError); ok {
-			return ctx.Status(ce.Code()).JSON(response)
-		}
 		return err
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(response)
+	return ctx.Status(response.Code).JSON(response.Data)
 }
 
 func (c *UserController) GetUserProfile(ctx *fiber.Ctx) error {
@@ -40,7 +36,7 @@ func (c *UserController) GetUserProfile(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(response)
+	return ctx.Status(response.Code).JSON(response.Data)
 }
 
 func (c *UserController) UpdateUserProfile(ctx *fiber.Ctx) error {
@@ -54,7 +50,7 @@ func (c *UserController) UpdateUserProfile(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(response)
+	return ctx.Status(response.Code).JSON(response.Data)
 }
 
 func NewUserController(log *customtypes.Logger, registry *service.Registry) *UserController {

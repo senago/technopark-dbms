@@ -17,9 +17,9 @@ import (
 )
 
 type UserService interface {
-	CreateUser(ctx context.Context, request *dto.CreateUserRequest) (interface{}, error)
-	GetUserProfile(ctx context.Context, request *dto.GetUserProfileRequest) (*dto.GetUserProfileResponse, error)
-	UpdateUserProfile(ctx context.Context, request *dto.UpdateUserProfileRequest) (interface{}, error)
+	CreateUser(ctx context.Context, request *dto.CreateUserRequest) (*dto.Response, error)
+	GetUserProfile(ctx context.Context, request *dto.GetUserProfileRequest) (*dto.Response, error)
+	UpdateUserProfile(ctx context.Context, request *dto.UpdateUserProfileRequest) (*dto.Response, error)
 }
 
 type userServiceImpl struct {
@@ -27,48 +27,47 @@ type userServiceImpl struct {
 	db  *db.Repository
 }
 
-func (svc *userServiceImpl) CreateUser(ctx context.Context, request *dto.CreateUserRequest) (interface{}, error) {
-	user := &core.User{Nickname: request.Nickname, Fullname: request.Fullname, About: request.About, Email: request.Email}
-
-	if users, err := svc.db.UserRepository.GetUsersByEmailOrNickname(ctx, user.Email, user.Nickname); err != nil {
+func (svc *userServiceImpl) CreateUser(ctx context.Context, request *dto.CreateUserRequest) (*dto.Response, error) {
+	if users, err := svc.db.UserRepository.GetUsersByEmailOrNickname(ctx, request.Email, request.Nickname); err != nil {
 		return nil, err
 	} else if len(users) > 0 {
-		return users, constants.ErrUserAlreadyExists
+		return &dto.Response{Data: users, Code: http.StatusConflict}, nil
 	}
 
+	user := &core.User{Nickname: request.Nickname, Fullname: request.Fullname, About: request.About, Email: request.Email}
 	if err := svc.db.UserRepository.CreateUser(ctx, user); err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return &dto.Response{Data: user, Code: http.StatusCreated}, nil
 }
 
-func (svc *userServiceImpl) GetUserProfile(ctx context.Context, request *dto.GetUserProfileRequest) (*dto.GetUserProfileResponse, error) {
+func (svc *userServiceImpl) GetUserProfile(ctx context.Context, request *dto.GetUserProfileRequest) (*dto.Response, error) {
 	user, err := svc.db.UserRepository.GetUserByNickname(ctx, request.Nickname)
 	if err != nil {
 		if errors.Is(err, constants.ErrDBNotFound) {
-			return nil, constants.NewCodedError(fmt.Sprintf("Can't find user by nickname: %s", request.Nickname), http.StatusNotFound)
+			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find user by nickname: %s", request.Nickname)}, Code: http.StatusNotFound}, nil
 		}
 		return nil, err
 	}
-	return user, nil
+	return &dto.Response{Data: user, Code: http.StatusOK}, nil
 }
 
-func (svc *userServiceImpl) UpdateUserProfile(ctx context.Context, request *dto.UpdateUserProfileRequest) (interface{}, error) {
+func (svc *userServiceImpl) UpdateUserProfile(ctx context.Context, request *dto.UpdateUserProfileRequest) (*dto.Response, error) {
 	user := &core.User{Nickname: request.Nickname, Fullname: request.Fullname, About: request.About, Email: request.Email}
 	updatedUser, err := svc.db.UserRepository.UpdateUser(ctx, user)
 	if err != nil {
 		if errors.Is(err, constants.ErrDBNotFound) {
-			return nil, constants.NewCodedError(fmt.Sprintf("Can't find user by nickname: %s", request.Nickname), http.StatusNotFound)
+			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find user by nickname: %s", request.Nickname)}, Code: http.StatusNotFound}, nil
 		} else {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-				return nil, constants.NewCodedError(fmt.Sprintf("This email is already registered by user: %s", user.Nickname), http.StatusConflict)
+				return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("This email is already registered by user: %s", request.Nickname)}, Code: http.StatusConflict}, nil
 			}
 		}
 		return nil, err
 	}
-	return updatedUser, nil
+	return &dto.Response{Data: updatedUser, Code: http.StatusOK}, nil
 }
 
 func NewUserService(log *customtypes.Logger, db *db.Repository) UserService {

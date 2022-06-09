@@ -75,7 +75,6 @@ func (repo *userRepositoryImpl) UpdateUser(ctx context.Context, user *core.User)
 	return updatedUser, nil
 }
 
-// NewUserRepository creates a new instance of userRepositoryImpl
 func NewUserRepository(dbConn *customtypes.DBConn) (*userRepositoryImpl, error) {
 	return &userRepositoryImpl{dbConn: dbConn}, nil
 }

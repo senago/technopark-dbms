@@ -5,7 +5,8 @@ import (
 )
 
 type Repository struct {
-	UserRepository UserRepository
+	UserRepository  UserRepository
+	ForumRepository ForumRepository
 }
 
 func NewRepository(dbConn *customtypes.DBConn) (*Repository, error) {
@@ -13,6 +14,11 @@ func NewRepository(dbConn *customtypes.DBConn) (*Repository, error) {
 	repository := new(Repository)
 
 	repository.UserRepository, err = NewUserRepository(dbConn)
+	if err != nil {
+		return nil, err
+	}
+
+	repository.ForumRepository, err = NewForumRepository(dbConn)
 	if err != nil {
 		return nil, err
 	}
