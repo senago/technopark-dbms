@@ -17,6 +17,7 @@ import (
 type ForumService interface {
 	CreateForum(ctx context.Context, request *dto.CreateForumRequest) (*dto.Response, error)
 	GetForumBySlug(ctx context.Context, request *dto.GetForumBySlugRequest) (*dto.Response, error)
+	GetForumThreads(ctx context.Context, request *dto.GetForumThreadsRequest) (*dto.Response, error)
 }
 
 type forumServiceImpl struct {
@@ -61,6 +62,23 @@ func (svc *forumServiceImpl) GetForumBySlug(ctx context.Context, request *dto.Ge
 		}
 	}
 	return &dto.Response{Data: forum, Code: http.StatusOK}, nil
+}
+
+func (svc *forumServiceImpl) GetForumThreads(ctx context.Context, request *dto.GetForumThreadsRequest) (*dto.Response, error) {
+	if forum, err := svc.db.ForumRepository.GetForumBySlug(ctx, request.Slug); err != nil {
+		if errors.Is(err, constants.ErrDBNotFound) {
+			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find forum with slug: %s", request.Slug)}, Code: http.StatusNotFound}, nil
+		}
+	} else {
+		request.Slug = forum.Slug
+	}
+
+	threads, err := svc.db.ForumRepository.GetForumThreads(ctx, request.Slug, request.Limit, request.Since, request.Desc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.Response{Data: threads, Code: http.StatusOK}, nil
 }
 
 func NewForumService(log *customtypes.Logger, db *db.Repository) ForumService {

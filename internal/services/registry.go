@@ -6,15 +6,17 @@ import (
 )
 
 type Registry struct {
-	UserService  UserService
-	ForumService ForumService
+	UserService        UserService
+	ForumService       ForumService
+	ForumThreadService ForumThreadService
 }
 
 func NewRegistry(log *customtypes.Logger, repository *db.Repository) *Registry {
-	registry := new(Registry)
+	registry := &Registry{}
 
 	registry.UserService = NewUserService(log, repository)
 	registry.ForumService = NewForumService(log, repository)
+	registry.ForumThreadService = NewForumThreadService(log, repository)
 
 	return registry
 }

@@ -7,8 +7,9 @@ import (
 )
 
 type Registry struct {
-	UserController  *UserController
-	ForumController *ForumController
+	UserController        *UserController
+	ForumController       *ForumController
+	ForumThreadController *ForumThreadController
 }
 
 func NewRegistry(log *customtypes.Logger, dbConn *customtypes.DBConn) *Registry {
@@ -18,10 +19,11 @@ func NewRegistry(log *customtypes.Logger, dbConn *customtypes.DBConn) *Registry 
 	}
 	serviceRegistry := service.NewRegistry(log, repository)
 
-	registry := new(Registry)
+	registry := &Registry{}
 
 	registry.UserController = NewUserController(log, serviceRegistry)
 	registry.ForumController = NewForumController(log, serviceRegistry)
+	registry.ForumThreadController = NewForumThreadController(log, serviceRegistry)
 
 	return registry
 }

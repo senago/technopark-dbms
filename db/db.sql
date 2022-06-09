@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE UNLOGGED TABLE IF NOT EXISTS users (
   id bigserial,
-  nickname citext COLLATE "ucs_basic" NOT NULL UNIQUE PRIMARY KEY,
+  nickname citext COLLATE "ucs_basic" NOT NULL PRIMARY KEY,
   fullname text NOT NULL,
   about text,
   email citext NOT NULL UNIQUE
@@ -19,7 +19,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS forums (
 );
 
 CREATE UNLOGGED TABLE IF NOT EXISTS threads (
-  id bigserial PRIMARY KEY NOT NULL,
+  id bigserial PRIMARY KEY,
   title text NOT NULL,
   author citext COLLATE "ucs_basic" NOT NULL REFERENCES users (nickname),
   forum citext NOT NULL REFERENCES forums (slug),
@@ -30,7 +30,7 @@ CREATE UNLOGGED TABLE IF NOT EXISTS threads (
 );
 
 CREATE UNLOGGED TABLE IF NOT EXISTS posts (
-  id bigserial NOT NULL UNIQUE PRIMARY KEY,
+  id bigserial NOT NULL PRIMARY KEY,
   parent integer DEFAULT 0,
   author citext COLLATE "ucs_basic" NOT NULL REFERENCES users (nickname),
   message text NOT NULL,
@@ -90,7 +90,7 @@ CREATE OR REPLACE TRIGGER update_path BEFORE INSERT ON posts FOR EACH ROW EXECUT
 
 CREATE OR REPLACE FUNCTION count_forum_threads() RETURNS TRIGGER AS $$
   BEGIN
-    UPDATE forums SET threads = forum.threads + 1 WHERE slug = NEW.forum;
+    UPDATE forums SET threads = forums.threads + 1 WHERE slug = NEW.forum;
     RETURN NEW;
   END;
 $$ LANGUAGE plpgsql;
@@ -100,7 +100,7 @@ CREATE OR REPLACE TRIGGER update_count_threads AFTER INSERT ON threads FOR EACH 
 
 CREATE OR REPLACE FUNCTION count_forum_posts() RETURNS TRIGGER AS $$
   BEGIN
-    UPDATE forums SET posts = forum.posts + 1 WHERE slug = NEW.forum;
+    UPDATE forums SET posts = forums.posts + 1 WHERE slug = NEW.forum;
     RETURN NEW;
   END;
 $$ LANGUAGE plpgsql;

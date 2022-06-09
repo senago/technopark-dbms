@@ -44,6 +44,9 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 
 	api.Post("/forum/create", controllersRegistry.ForumController.CreateForum)
 	api.Get("/forum/:slug/details", controllersRegistry.ForumController.GetForumBySlug)
+	api.Get("/forum/:slug/threads", controllersRegistry.ForumController.GetForumThreads)
+
+	api.Post("/forum/:slug/create", controllersRegistry.ForumThreadController.CreateForumThread)
 
 	return svc, nil
 }

@@ -12,8 +12,7 @@ import (
 const (
 	queryCreateForum = `INSERT INTO forums (title, "user", slug) VALUES ($1, $2, $3);`
 
-	queryGetForumBySlug  = `SELECT title, "user", slug, posts, threads FROM forums WHERE slug = $1;`
-	queryGetForumThreads = "SELECT t.id, t.title, t.author, t.forum, t.message, t.votes, t.slug, t.created FROM threads as t LEFT JOIN forum f on t.forum = f.slug WHERE f.slug = $1;"
+	queryGetForumBySlug = `SELECT title, "user", slug, posts, threads FROM forums WHERE slug = $1;`
 )
 
 type ForumRepository interface {
@@ -47,13 +46,13 @@ func (repo *forumRepositoryImpl) GetForumUsers(ctx context.Context, slug string,
 	}
 	defer rows.Close()
 
-	user := &core.User{}
 	users := []*core.User{}
 	for rows.Next() {
-		if err := rows.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email); err != nil {
+		u := &core.User{}
+		if err := rows.Scan(&u.Nickname, &u.Fullname, &u.About, &u.Email); err != nil {
 			return nil, err
 		}
-		users = append(users, user)
+		users = append(users, u)
 	}
 
 	return users, nil
@@ -63,28 +62,28 @@ func (repo *forumRepositoryImpl) GetForumThreads(ctx context.Context, slug strin
 	var rows pgx.Rows
 	var err error
 
-	query := queryGetForumThreads
+	query := "SELECT t.id, t.title, t.author, t.forum, t.message, t.votes, t.slug, t.created FROM threads as t LEFT JOIN forums f ON t.forum = f.slug WHERE f.slug = $1 "
 
 	queryOrderBy := "ORDER BY t.created "
 	if desc {
-		queryOrderBy += "DESC"
+		queryOrderBy += "DESC "
 	}
 	if limit > 0 {
-		queryOrderBy += fmt.Sprintf(" LIMIT %d", limit)
+		queryOrderBy += fmt.Sprintf("LIMIT %d ", limit)
 	}
 
 	if since != "" {
-		querySince := " AND t.created >= $2 "
+		querySince := "AND t.created >= $2 "
 		if since != "" && desc {
-			querySince = " and t.created <= $2 "
+			querySince = "AND t.created <= $2 "
 		} else if since != "" && !desc {
-			querySince = " and t.created >= $2 "
+			querySince = "AND t.created >= $2 "
 		}
 
-		query = query + querySince + queryOrderBy
+		query += querySince + queryOrderBy
 		rows, err = repo.dbConn.Query(ctx, query, slug, since)
 	} else {
-		query = query + queryOrderBy
+		query += queryOrderBy
 		rows, err = repo.dbConn.Query(ctx, query, slug)
 	}
 	if err != nil {
@@ -92,13 +91,13 @@ func (repo *forumRepositoryImpl) GetForumThreads(ctx context.Context, slug strin
 	}
 	defer rows.Close()
 
-	thread := &core.Thread{}
 	threads := []*core.Thread{}
 	for rows.Next() {
-		if err := rows.Scan(&thread.ID, &thread.Title, &thread.Author, &thread.Forum, &thread.Message, &thread.Votes, &thread.Slug, &thread.Created); err != nil {
+		t := &core.Thread{}
+		if err := rows.Scan(&t.ID, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &t.Slug, &t.Created); err != nil {
 			return nil, err
 		}
-		threads = append(threads, thread)
+		threads = append(threads, t)
 	}
 
 	return threads, nil

@@ -5,13 +5,14 @@ import (
 )
 
 type Repository struct {
-	UserRepository  UserRepository
-	ForumRepository ForumRepository
+	UserRepository        UserRepository
+	ForumRepository       ForumRepository
+	ForumThreadRepository ForumThreadRepository
 }
 
 func NewRepository(dbConn *customtypes.DBConn) (*Repository, error) {
 	var err error
-	repository := new(Repository)
+	repository := &Repository{}
 
 	repository.UserRepository, err = NewUserRepository(dbConn)
 	if err != nil {
@@ -19,6 +20,11 @@ func NewRepository(dbConn *customtypes.DBConn) (*Repository, error) {
 	}
 
 	repository.ForumRepository, err = NewForumRepository(dbConn)
+	if err != nil {
+		return nil, err
+	}
+
+	repository.ForumThreadRepository, err = NewForumThreadRepository(dbConn)
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,7 @@ package core
 import "time"
 
 type Thread struct {
-	ID      int64     `json:"id,omitempty"`
+	ID      int64     `json:"id"`
 	Title   string    `json:"title"`
 	Author  string    `json:"author"`
 	Forum   string    `json:"forum"`

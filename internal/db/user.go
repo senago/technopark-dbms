@@ -57,11 +57,11 @@ func (repo *userRepositoryImpl) GetUsersByEmailOrNickname(ctx context.Context, e
 
 	users := []*core.User{}
 	for rows.Next() {
-		user := &core.User{}
-		if err := rows.Scan(&user.Nickname, &user.Fullname, &user.About, &user.Email); err != nil {
+		u := &core.User{}
+		if err := rows.Scan(&u.Nickname, &u.Fullname, &u.About, &u.Email); err != nil {
 			return nil, err
 		}
-		users = append(users, user)
+		users = append(users, u)
 	}
 
 	return users, nil

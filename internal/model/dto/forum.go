@@ -9,3 +9,10 @@ type CreateForumRequest struct {
 type GetForumBySlugRequest struct {
 	Slug string `path:"slug"`
 }
+
+type GetForumThreadsRequest struct {
+	Slug  string `path:"slug"`
+	Limit int64  `query:"limit"`
+	Since string `query:"since"`
+	Desc  bool   `query:"desc"`
+}
