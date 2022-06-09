@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	queryCheckPostParent = "SELECT threads FROM post WHERE id = $1;"
+	queryCheckPostParent = "SELECT thread FROM posts WHERE id = $1;"
 )
 
 type PostsRepository interface {

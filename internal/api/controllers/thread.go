@@ -43,6 +43,17 @@ func (c *ForumThreadController) UpdateVote(ctx *fiber.Ctx) error {
 	return ctx.Status(response.Code).JSON(response.Data)
 }
 
+func (c *ForumThreadController) GetThreadDetails(ctx *fiber.Ctx) error {
+	slugOrID := ctx.Params("slug_or_id")
+
+	response, err := c.registry.ForumThreadService.GetThreadDetails(context.Background(), slugOrID)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(response.Code).JSON(response.Data)
+}
+
 func NewForumThreadController(log *customtypes.Logger, registry *service.Registry) *ForumThreadController {
 	return &ForumThreadController{log: log, registry: registry}
 }

@@ -18,6 +18,7 @@ import (
 type ForumThreadService interface {
 	CreateForumThread(ctx context.Context, request *dto.CreateForumThreadRequest) (*dto.Response, error)
 	UpdateVote(ctx context.Context, slugOrID string, request *dto.UpdateVoteRequest) (*dto.Response, error)
+	GetThreadDetails(ctx context.Context, slugOrID string) (*dto.Response, error)
 }
 
 type forumThreadServiceImpl struct {
@@ -117,7 +118,29 @@ func (svc *forumThreadServiceImpl) UpdateVote(ctx context.Context, slugOrID stri
 	}
 
 	return &dto.Response{Data: thread, Code: http.StatusOK}, nil
+}
 
+func (svc *forumThreadServiceImpl) GetThreadDetails(ctx context.Context, slugOrID string) (*dto.Response, error) {
+	id, err := strconv.Atoi(slugOrID)
+	if err != nil {
+		if thread, err := svc.db.ForumThreadRepository.GetForumThreadBySlug(ctx, slugOrID); err != nil {
+			if errors.Is(err, constants.ErrDBNotFound) {
+				return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find thread forum by slug: %s", slugOrID)}, Code: http.StatusNotFound}, nil
+			}
+			return nil, err
+		} else {
+			return &dto.Response{Data: thread, Code: http.StatusOK}, nil
+		}
+	}
+
+	thread, err := svc.db.ForumThreadRepository.GetForumThreadByID(ctx, int64(id))
+	if err != nil {
+		if errors.Is(err, constants.ErrDBNotFound) {
+			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find thread forum by id: %d", id)}, Code: http.StatusNotFound}, nil
+		}
+	}
+
+	return &dto.Response{Data: thread, Code: http.StatusOK}, nil
 }
 
 func NewForumThreadService(log *customtypes.Logger, db *db.Repository) ForumThreadService {
