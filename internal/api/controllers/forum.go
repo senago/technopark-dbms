@@ -28,6 +28,17 @@ func (c *ForumController) CreateForum(ctx *fiber.Ctx) error {
 	return ctx.Status(response.Code).JSON(response.Data)
 }
 
+func (c *ForumController) GetForumBySlug(ctx *fiber.Ctx) error {
+	request := &dto.GetForumBySlugRequest{Slug: ctx.Params("slug")}
+
+	response, err := c.registry.ForumService.GetForumBySlug(context.Background(), request)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(response.Code).JSON(response.Data)
+}
+
 func NewForumController(log *customtypes.Logger, registry *service.Registry) *ForumController {
 	return &ForumController{log: log, registry: registry}
 }

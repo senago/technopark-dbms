@@ -5,3 +5,7 @@ type CreateForumRequest struct {
 	User  string `json:"user"`
 	Slug  string `json:"slug"`
 }
+
+type GetForumBySlugRequest struct {
+	Slug string `path:"slug"`
+}

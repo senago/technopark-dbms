@@ -43,6 +43,7 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 	api.Post("/user/:nickname/profile", controllersRegistry.UserController.UpdateUserProfile)
 
 	api.Post("/forum/create", controllersRegistry.ForumController.CreateForum)
+	api.Get("/forum/:slug/details", controllersRegistry.ForumController.GetForumBySlug)
 
 	return svc, nil
 }

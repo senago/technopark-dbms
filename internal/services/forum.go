@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
 	"github.com/senago/technopark-dbms/internal/constants"
 	"github.com/senago/technopark-dbms/internal/customtypes"
 	"github.com/senago/technopark-dbms/internal/db"
@@ -18,6 +16,7 @@ import (
 
 type ForumService interface {
 	CreateForum(ctx context.Context, request *dto.CreateForumRequest) (*dto.Response, error)
+	GetForumBySlug(ctx context.Context, request *dto.GetForumBySlugRequest) (*dto.Response, error)
 }
 
 type forumServiceImpl struct {
@@ -34,12 +33,15 @@ func (svc *forumServiceImpl) CreateForum(ctx context.Context, request *dto.Creat
 		return &dto.Response{Data: forum, Code: http.StatusConflict}, nil
 	}
 
-	forum := &core.Forum{Title: request.Title, User: request.User, Slug: request.Slug}
-	if err := svc.db.ForumRepository.CreateForum(ctx, forum); err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.ForeignKeyViolation {
+	user, err := svc.db.UserRepository.GetUserByNickname(ctx, request.User)
+	if err != nil {
+		if errors.Is(err, constants.ErrDBNotFound) {
 			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find user by nickname: %s", request.User)}, Code: http.StatusNotFound}, nil
 		}
+	}
+	request.User = user.Nickname
+
+	if err := svc.db.ForumRepository.CreateForum(ctx, &core.Forum{Title: request.Title, User: request.User, Slug: request.Slug}); err != nil {
 		return nil, err
 	}
 
@@ -49,6 +51,16 @@ func (svc *forumServiceImpl) CreateForum(ctx context.Context, request *dto.Creat
 	}
 
 	return &dto.Response{Data: forum, Code: http.StatusCreated}, nil
+}
+
+func (svc *forumServiceImpl) GetForumBySlug(ctx context.Context, request *dto.GetForumBySlugRequest) (*dto.Response, error) {
+	forum, err := svc.db.ForumRepository.GetForumBySlug(ctx, request.Slug)
+	if err != nil {
+		if errors.Is(err, constants.ErrDBNotFound) {
+			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find forum with slug: %s", request.Slug)}, Code: http.StatusNotFound}, nil
+		}
+	}
+	return &dto.Response{Data: forum, Code: http.StatusOK}, nil
 }
 
 func NewForumService(log *customtypes.Logger, db *db.Repository) ForumService {
