@@ -11,6 +11,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    pid: host
 
   postgres:
     image: postgres:latest
@@ -25,22 +26,6 @@ services:
       - ./db/db.sql:/docker-entrypoint-initdb.d/db.sql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U root -d technopark-dbms" ]
-      interval: 5s
+      interval: 1s
       timeout: 5s
       retries: 5
-
-  adminer:
-    image: adminer:latest
-    restart: unless-stopped
-    ports:
-      - "8081:8080"
-    environment:
-      ADMINER_DESIGN: dracula
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-networks:
-  default:
-    name: api
-    external: true

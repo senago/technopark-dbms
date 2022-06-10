@@ -50,6 +50,6 @@ func (repo *votesRepositoryImpl) UpdateVote(ctx context.Context, threadID int64,
 	return res.RowsAffected() == 1, nil
 }
 
-func NewVotesRepository(dbConn *customtypes.DBConn) (*votesRepositoryImpl, error) {
-	return &votesRepositoryImpl{dbConn: dbConn}, nil
+func NewVotesRepository(dbConn *customtypes.DBConn) *votesRepositoryImpl {
+	return &votesRepositoryImpl{dbConn: dbConn}
 }

@@ -58,6 +58,21 @@ func (c *PostsController) GetPostDetails(ctx *fiber.Ctx) error {
 	return ctx.Status(response.Code).JSON(response.Data)
 }
 
+func (c *PostsController) UpdatePost(ctx *fiber.Ctx) error {
+	id, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	request := &dto.UpdatePostRequest{ID: id}
+	if err := Bind(ctx, request); err != nil {
+		return err
+	}
+
+	response, err := c.registry.PostsService.UpdatePost(context.Background(), request)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(response.Code).JSON(response.Data)
+}
+
 func NewPostsController(log *customtypes.Logger, registry *service.Registry) *PostsController {
 	return &PostsController{log: log, registry: registry}
 }

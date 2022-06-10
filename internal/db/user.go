@@ -75,6 +75,6 @@ func (repo *userRepositoryImpl) UpdateUser(ctx context.Context, user *core.User)
 	return updatedUser, nil
 }
 
-func NewUserRepository(dbConn *customtypes.DBConn) (*userRepositoryImpl, error) {
-	return &userRepositoryImpl{dbConn: dbConn}, nil
+func NewUserRepository(dbConn *customtypes.DBConn) *userRepositoryImpl {
+	return &userRepositoryImpl{dbConn: dbConn}
 }

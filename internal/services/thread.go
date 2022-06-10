@@ -145,9 +145,12 @@ func (svc *forumThreadServiceImpl) GetThreadDetails(ctx context.Context, slugOrI
 }
 
 func (svc *forumThreadServiceImpl) UpdateForumThread(ctx context.Context, slugOrID string, request *dto.UpdateForumThreadRequest) (*dto.Response, error) {
+	var thread *core.Thread
+	var err error
+
 	id, err := strconv.Atoi(slugOrID)
 	if err != nil {
-		if thread, err := svc.db.ForumThreadRepository.GetForumThreadBySlug(ctx, slugOrID); err != nil {
+		if thread, err = svc.db.ForumThreadRepository.GetForumThreadBySlug(ctx, slugOrID); err != nil {
 			if errors.Is(err, constants.ErrDBNotFound) {
 				return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find thread forum by slug: %s", slugOrID)}, Code: http.StatusNotFound}, nil
 			}
@@ -157,13 +160,21 @@ func (svc *forumThreadServiceImpl) UpdateForumThread(ctx context.Context, slugOr
 		}
 	}
 
-	if _, err := svc.db.ForumThreadRepository.GetForumThreadByID(ctx, int64(id)); err != nil {
+	if thread, err = svc.db.ForumThreadRepository.GetForumThreadByID(ctx, int64(id)); err != nil {
 		if errors.Is(err, constants.ErrDBNotFound) {
 			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find thread forum by id: %d", id)}, Code: http.StatusNotFound}, nil
 		}
 	}
 
-	thread, err := svc.db.ForumThreadRepository.UpdateForumThreadByID(ctx, int64(id), request.Title, request.Message)
+	if len(request.Title) == 0 {
+		request.Title = thread.Title
+	}
+
+	if len(request.Message) == 0 {
+		request.Message = thread.Message
+	}
+
+	thread, err = svc.db.ForumThreadRepository.UpdateForumThreadByID(ctx, int64(id), request.Title, request.Message)
 	return &dto.Response{Data: thread, Code: http.StatusOK}, err
 }
 

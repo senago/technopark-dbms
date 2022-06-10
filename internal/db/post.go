@@ -16,9 +16,11 @@ const (
 	queryCheckPostParent = "SELECT thread FROM posts WHERE id = $1;"
 
 	queryGetPost       = "SELECT id, parent, author, message, is_edited, forum, thread, created FROM posts WHERE id = $1;"
-	queryGetPostAuthor = "SELECT a.nickname, a.fullname, a.about, a.email FROM posts JOIN users a on a.nickname = post.author WHERE post.id = $1;"
-	queryGetPostThread = "SELECT th.id, th.title, th.author, th.forum, th.message, th.votes, th.slug, th.created FROM posts JOIN threads th ON th.id = post.thread WHERE post.id = $1;"
-	queryGetPostForum  = "SELECT f.title, f.users_nickname, f.slug, f.posts, f.threads FROM posts JOIN forums f ON f.slug = post.forum WHERE post.id = $1;"
+	queryGetPostAuthor = "SELECT a.nickname, a.fullname, a.about, a.email FROM posts JOIN users a ON a.nickname = posts.author WHERE posts.id = $1;"
+	queryGetPostThread = "SELECT th.id, th.title, th.author, th.forum, th.message, th.votes, th.slug, th.created FROM posts JOIN threads th ON th.id = posts.thread WHERE posts.id = $1;"
+	queryGetPostForum  = "SELECT f.title, f.user, f.slug, f.posts, f.threads FROM posts JOIN forums f ON f.slug = posts.forum WHERE posts.id = $1;"
+
+	queryUpdatePost = "UPDATE posts SET message = $2, is_edited = true WHERE id = $1 RETURNING id, parent, author, message, is_edited, forum, thread, created;"
 )
 
 type PostsRepository interface {
@@ -29,6 +31,9 @@ type PostsRepository interface {
 	GetPostsTree(ctx context.Context, id int, since int64, desc bool, limit int64) ([]*core.Post, error)
 	GetPostsParentTree(ctx context.Context, id int, since int64, desc bool, limit int64) ([]*core.Post, error)
 	GetPostDetails(ctx context.Context, id int64, related string) (*dto.PostDetails, error)
+	GetPostByID(ctx context.Context, id int64) (*core.Post, error)
+
+	UpdatePost(ctx context.Context, id int64, message string) (*core.Post, error)
 }
 
 type postsRepositoryImpl struct {
@@ -71,7 +76,7 @@ func (repo *postsRepositoryImpl) CreatePosts(ctx context.Context, forum string, 
 func (repo *postsRepositoryImpl) CheckParentPost(ctx context.Context, parent int) (int, error) {
 	var threadID int
 	err := repo.dbConn.QueryRow(ctx, queryCheckPostParent, parent).Scan(&threadID)
-	return threadID, err
+	return threadID, wrapErr(err)
 }
 
 func (repo *postsRepositoryImpl) GetPostsFlat(ctx context.Context, id int, since int64, desc bool, limit int64) ([]*core.Post, error) {
@@ -236,17 +241,27 @@ func (repo *postsRepositoryImpl) GetPostDetails(ctx context.Context, id int64, r
 		}
 	}
 
-	post := &core.Post{}
-	err := repo.dbConn.QueryRow(ctx, queryGetPost, id).
-		Scan(&post.ID, &post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread, &post.Created)
-	if err != nil {
-		return nil, wrapErr(err)
-	}
-	postDetails.Post = post
-
 	return postDetails, nil
 }
 
-func NewPostsRepository(dbConn *customtypes.DBConn) (*postsRepositoryImpl, error) {
-	return &postsRepositoryImpl{dbConn: dbConn}, nil
+func (repo *postsRepositoryImpl) GetPostByID(ctx context.Context, id int64) (*core.Post, error) {
+	post := &core.Post{}
+	err := repo.dbConn.QueryRow(ctx, queryGetPost, id).
+		Scan(&post.ID, &post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread, &post.Created)
+	return post, wrapErr(err)
+}
+
+func (repo *postsRepositoryImpl) UpdatePost(ctx context.Context, id int64, message string) (*core.Post, error) {
+	post := &core.Post{}
+	err := repo.dbConn.QueryRow(ctx, queryUpdatePost, id, message).
+		Scan(&post.ID, &post.Parent, &post.Author, &post.Message,
+			&post.IsEdited, &post.Forum, &post.Thread, &post.Created)
+	if err != nil {
+		return nil, wrapErr(err)
+	}
+	return post, nil
+}
+
+func NewPostsRepository(dbConn *customtypes.DBConn) *postsRepositoryImpl {
+	return &postsRepositoryImpl{dbConn: dbConn}
 }

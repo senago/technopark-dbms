@@ -5,7 +5,6 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/senago/technopark-dbms/internal/api/controllers"
 	"github.com/senago/technopark-dbms/internal/customtypes"
@@ -28,6 +27,7 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 	svc := &APIService{
 		log: log,
 		router: fiber.New(fiber.Config{
+			Prefork:     true,
 			JSONEncoder: sonic.Marshal,
 			JSONDecoder: sonic.Unmarshal,
 		}),
@@ -35,8 +35,7 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 
 	controllersRegistry := controllers.NewRegistry(log, dbConn)
 
-	// TODO: Remove log for better performance
-	api := svc.router.Group("/api", recover.New(), logger.New())
+	api := svc.router.Group("/api", recover.New())
 
 	api.Post("/user/:nickname/create", controllersRegistry.UserController.CreateUser)
 	api.Get("/user/:nickname/profile", controllersRegistry.UserController.GetUserProfile)
@@ -56,6 +55,10 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 	api.Post("/thread/:slug_or_id/details", controllersRegistry.ForumThreadController.UpdateForumThread)
 
 	api.Get("/post/:id/details", controllersRegistry.PostsController.GetPostDetails)
+	api.Post("/post/:id/details", controllersRegistry.PostsController.UpdatePost)
+
+	api.Get("/service/status", controllersRegistry.ServiceController.Status)
+	api.Post("/service/clear", controllersRegistry.ServiceController.Delete)
 
 	return svc, nil
 }

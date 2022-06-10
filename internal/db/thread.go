@@ -54,6 +54,6 @@ func (repo *forumThreadRepositoryImpl) UpdateForumThreadByID(ctx context.Context
 	return t, wrapErr(err)
 }
 
-func NewForumThreadRepository(dbConn *customtypes.DBConn) (*forumThreadRepositoryImpl, error) {
-	return &forumThreadRepositoryImpl{dbConn: dbConn}, nil
+func NewForumThreadRepository(dbConn *customtypes.DBConn) *forumThreadRepositoryImpl {
+	return &forumThreadRepositoryImpl{dbConn: dbConn}
 }

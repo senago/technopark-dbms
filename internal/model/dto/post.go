@@ -19,3 +19,8 @@ type GetPostDetailsRequest struct {
 	ID      int64  `path:"id"`
 	Related string `query:"related"`
 }
+
+type UpdatePostRequest struct {
+	ID      int64  `path:"id"`
+	Message string `json:"message"`
+}

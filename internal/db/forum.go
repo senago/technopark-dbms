@@ -103,8 +103,8 @@ func (repo *forumRepositoryImpl) GetForumThreads(ctx context.Context, slug strin
 	return threads, nil
 }
 
-func NewForumRepository(dbConn *customtypes.DBConn) (*forumRepositoryImpl, error) {
-	return &forumRepositoryImpl{dbConn: dbConn}, nil
+func NewForumRepository(dbConn *customtypes.DBConn) *forumRepositoryImpl {
+	return &forumRepositoryImpl{dbConn: dbConn}
 }
 
 func constructGetForumUsersQuery(limit int64, since string, desc bool) string {

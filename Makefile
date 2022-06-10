@@ -14,7 +14,7 @@ DOCKER_BUILD_KIT:=COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1
 
 all: down build up
 
-debug: down build up-debug
+dev: down-dev up-dev
 
 down:
 	docker-compose -f ${DCOMPOSE} down --remove-orphans
@@ -25,9 +25,6 @@ build:
 
 up:
 	docker-compose --compatibility -f ${DCOMPOSE} up -d --remove-orphans
-
-up-debug:
-	docker-compose --compatibility -f ${DCOMPOSE} up --remove-orphans
 
 # Vendoring is useful for local debugging since you don't have to
 # reinstall all packages again and again in docker

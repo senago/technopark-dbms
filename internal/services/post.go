@@ -17,8 +17,11 @@ import (
 
 type PostsService interface {
 	CreatePosts(ctx context.Context, slugOrID string, posts []*dto.PostData) (*dto.Response, error)
+
 	GetPosts(ctx context.Context, slugOrID string, sort string, since int64, desc bool, limit int64) (*dto.Response, error)
 	GetPostDetails(ctx context.Context, request *dto.GetPostDetailsRequest) (*dto.Response, error)
+
+	UpdatePost(ctx context.Context, request *dto.UpdatePostRequest) (*dto.Response, error)
 }
 
 type postsServiceImpl struct {
@@ -55,7 +58,9 @@ func (svc *postsServiceImpl) CreatePosts(ctx context.Context, slugOrID string, p
 	if posts[0].Parent != 0 {
 		parentThreadID, err := svc.db.PostsRepository.CheckParentPost(ctx, int(posts[0].Parent))
 		if err != nil {
-			return nil, err
+			if errors.Is(err, constants.ErrDBNotFound) {
+				return &dto.Response{Data: dto.ErrorResponse{Message: "Parent post was created in another thread"}, Code: http.StatusConflict}, nil
+			}
 		}
 
 		if parentThreadID != id {
@@ -114,14 +119,42 @@ func (svc *postsServiceImpl) GetPosts(ctx context.Context, slugOrID string, sort
 }
 
 func (svc *postsServiceImpl) GetPostDetails(ctx context.Context, request *dto.GetPostDetailsRequest) (*dto.Response, error) {
-	postDetails, err := svc.db.PostsRepository.GetPostDetails(ctx, request.ID, request.Related)
+	post, err := svc.db.PostsRepository.GetPostByID(ctx, request.ID)
 	if err != nil {
 		if errors.Is(err, constants.ErrDBNotFound) {
 			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find post by id: %d", request.ID)}, Code: http.StatusNotFound}, nil
 		}
 		return nil, err
 	}
+
+	postDetails, err := svc.db.PostsRepository.GetPostDetails(ctx, request.ID, request.Related)
+	if err != nil {
+		return nil, err
+	}
+	postDetails.Post = post
+
 	return &dto.Response{Data: postDetails, Code: http.StatusOK}, nil
+}
+
+func (svc *postsServiceImpl) UpdatePost(ctx context.Context, request *dto.UpdatePostRequest) (*dto.Response, error) {
+	post, err := svc.db.PostsRepository.GetPostByID(ctx, request.ID)
+	if err != nil {
+		if errors.Is(err, constants.ErrDBNotFound) {
+			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find post by id: %d", request.ID)}, Code: http.StatusNotFound}, nil
+		}
+		return nil, err
+	}
+
+	if len(request.Message) == 0 || request.Message == post.Message {
+		return &dto.Response{Data: post, Code: http.StatusOK}, nil
+	}
+
+	updatedPost, err := svc.db.PostsRepository.UpdatePost(ctx, request.ID, request.Message)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.Response{Data: updatedPost, Code: http.StatusOK}, nil
 }
 
 func NewPostsService(log *customtypes.Logger, db *db.Repository) PostsService {

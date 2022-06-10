@@ -10,36 +10,19 @@ type Repository struct {
 	ForumThreadRepository ForumThreadRepository
 	PostsRepository       PostsRepository
 	VotesRepository       VotesRepository
+	ServiceRepository     ServiceRepository
 }
 
 func NewRepository(dbConn *customtypes.DBConn) (*Repository, error) {
-	var err error
 	repository := &Repository{}
 
-	repository.UserRepository, err = NewUserRepository(dbConn)
-	if err != nil {
-		return nil, err
-	}
-
-	repository.ForumRepository, err = NewForumRepository(dbConn)
-	if err != nil {
-		return nil, err
-	}
-
-	repository.ForumThreadRepository, err = NewForumThreadRepository(dbConn)
-	if err != nil {
-		return nil, err
-	}
-
-	repository.PostsRepository, err = NewPostsRepository(dbConn)
-	if err != nil {
-		return nil, err
-	}
-
-	repository.VotesRepository, err = NewVotesRepository(dbConn)
-	if err != nil {
-		return nil, err
-	}
+	repository.UserRepository = NewUserRepository(dbConn)
+	repository.ForumRepository = NewForumRepository(dbConn)
+	repository.ForumThreadRepository = NewForumThreadRepository(dbConn)
+	repository.PostsRepository = NewPostsRepository(dbConn)
+	repository.VotesRepository = NewVotesRepository(dbConn)
+	repository.VotesRepository = NewVotesRepository(dbConn)
+	repository.ServiceRepository = NewServiceRepository(dbConn)
 
 	return repository, nil
 }
