@@ -4,7 +4,8 @@ services:
     build:
       context: .
       target: exec
-    image: cj:latest
+      dockerfile: Dockerfile.exec
+    image: technopark-dbms:latest
     ports:
       - "5000:8080"
     env_file: resources/config/.env

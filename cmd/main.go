@@ -27,7 +27,7 @@ func main() {
 
 	viper.AutomaticEnv()
 
-	viper.SetConfigFile(viper.GetString(configPathEnvVar))
+	viper.SetConfigFile("/cmd/configs/config.yaml")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("failed to read config file: %s\n", err)
 	}

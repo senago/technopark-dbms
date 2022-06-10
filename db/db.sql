@@ -65,7 +65,7 @@ CREATE OR REPLACE FUNCTION set_threads_votes() RETURNS TRIGGER AS $$
   END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER insert_votes AFTER INSERT ON votes FOR EACH ROW EXECUTE PROCEDURE set_threads_votes();
+CREATE TRIGGER insert_votes AFTER INSERT ON votes FOR EACH ROW EXECUTE PROCEDURE set_threads_votes();
 
 
 CREATE OR REPLACE FUNCTION update_threads_votes() RETURNS TRIGGER AS $$
@@ -75,7 +75,7 @@ CREATE OR REPLACE FUNCTION update_threads_votes() RETURNS TRIGGER AS $$
   END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER update_votes AFTER UPDATE ON votes FOR EACH ROW EXECUTE PROCEDURE update_threads_votes();
+CREATE TRIGGER update_votes AFTER UPDATE ON votes FOR EACH ROW EXECUTE PROCEDURE update_threads_votes();
 
 
 CREATE OR REPLACE FUNCTION update_post_path() RETURNS TRIGGER AS $$
@@ -85,7 +85,7 @@ CREATE OR REPLACE FUNCTION update_post_path() RETURNS TRIGGER AS $$
   END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER update_path BEFORE INSERT ON posts FOR EACH ROW EXECUTE PROCEDURE update_post_path();
+CREATE TRIGGER update_path BEFORE INSERT ON posts FOR EACH ROW EXECUTE PROCEDURE update_post_path();
 
 
 CREATE OR REPLACE FUNCTION count_forum_threads() RETURNS TRIGGER AS $$
@@ -95,7 +95,7 @@ CREATE OR REPLACE FUNCTION count_forum_threads() RETURNS TRIGGER AS $$
   END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER update_count_threads AFTER INSERT ON threads FOR EACH ROW EXECUTE PROCEDURE count_forum_threads();
+CREATE TRIGGER update_count_threads AFTER INSERT ON threads FOR EACH ROW EXECUTE PROCEDURE count_forum_threads();
 
 
 CREATE OR REPLACE FUNCTION count_forum_posts() RETURNS TRIGGER AS $$
@@ -105,7 +105,7 @@ CREATE OR REPLACE FUNCTION count_forum_posts() RETURNS TRIGGER AS $$
   END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER update_count_posts AFTER INSERT ON posts FOR EACH ROW EXECUTE PROCEDURE count_forum_posts();
+CREATE TRIGGER update_count_posts AFTER INSERT ON posts FOR EACH ROW EXECUTE PROCEDURE count_forum_posts();
 
 
 CREATE OR REPLACE FUNCTION update_forum_user() RETURNS TRIGGER AS $$
@@ -126,8 +126,8 @@ DECLARE
   END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER update_forum_users_on_post AFTER INSERT ON posts FOR EACH ROW EXECUTE PROCEDURE update_forum_user();
-CREATE OR REPLACE TRIGGER update_forum_users_on_thread AFTER INSERT ON threads FOR EACH ROW EXECUTE PROCEDURE update_forum_user();
+CREATE TRIGGER update_forum_users_on_post AFTER INSERT ON posts FOR EACH ROW EXECUTE PROCEDURE update_forum_user();
+CREATE TRIGGER update_forum_users_on_thread AFTER INSERT ON threads FOR EACH ROW EXECUTE PROCEDURE update_forum_user();
 
 -- Indexes
 
