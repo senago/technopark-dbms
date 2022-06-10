@@ -157,4 +157,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS votes_less ON votes (nickname, thread);
 CREATE UNIQUE INDEX IF NOT EXISTS votes_more ON votes (nickname, thread, voice);
 
 -- Vacuum for better performance
-VACUUM ANALYSE;
+VACUUM ANALYZE;
