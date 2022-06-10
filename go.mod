@@ -3,7 +3,7 @@ module github.com/senago/technopark-dbms
 go 1.18
 
 require (
-	github.com/bytedance/sonic v1.3.0
+	github.com/bytedance/sonic v1.3.1
 	github.com/gofiber/fiber/v2 v2.33.0
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa

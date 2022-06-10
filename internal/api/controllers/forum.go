@@ -17,7 +17,7 @@ type ForumController struct {
 
 func (c *ForumController) CreateForum(ctx *fiber.Ctx) error {
 	request := &dto.CreateForumRequest{}
-	if err := Bind(ctx, request); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		return err
 	}
 

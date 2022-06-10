@@ -5,7 +5,6 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/senago/technopark-dbms/internal/api/controllers"
 	"github.com/senago/technopark-dbms/internal/customtypes"
 )
@@ -34,7 +33,7 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 
 	controllersRegistry := controllers.NewRegistry(log, dbConn)
 
-	api := svc.router.Group("/api", recover.New())
+	api := svc.router.Group("/api")
 
 	api.Post("/user/:nickname/create", controllersRegistry.UserController.CreateUser)
 	api.Get("/user/:nickname/profile", controllersRegistry.UserController.GetUserProfile)

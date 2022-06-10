@@ -1,32 +1,11 @@
-# path to actual config - the one that is copied to the docker container
-CONFIG:=resources/config/config.yaml
+all: docker-build docker-run
 
-# path to docker compose file
-DCOMPOSE:=docker-compose.yaml
+docker-build:
+	DOCKER_BUILDKIT=1 docker build -t park .
 
-DCOMPOSE_BUILD_ARGS=--build-arg CONFIG=${CONFIG} --parallel
+docker-run:
+	docker rm -f park
+	docker run --memory 2G --log-opt max-size=5M --log-opt max-file=3 -p 5000:5000 -p 5432:5432 --name park -t park
 
-# path to external config which will copied to CONFIG
-CONFIG_PATH=resources/config/config_default.yaml
-
-# improve build time
-DOCKER_BUILD_KIT:=COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1
-
-all: down build up
-
-dev: down-dev up-dev
-
-down:
-	docker-compose -f ${DCOMPOSE} down --remove-orphans
-
-build:
-	cp ${CONFIG_PATH} ${CONFIG}
-	${DOCKER_BUILD_KIT} docker-compose build ${DCOMPOSE_BUILD_ARGS}
-
-up:
-	docker-compose --compatibility -f ${DCOMPOSE} up -d --remove-orphans
-
-# Vendoring is useful for local debugging since you don't have to
-# reinstall all packages again and again in docker
 mod:
-	go mod tidy -compat=1.18 && go mod vendor && go install ./...
+	go mod tidy && go mod vendor && go install ./...

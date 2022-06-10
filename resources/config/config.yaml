@@ -4,7 +4,7 @@ service:
   bind:
     address: 0.0.0.0
     port: 5000
-  shutdown_timeout: 10
+  shutdown_timeout: 5
 
 db:
   connection_string: postgres://root:rootpassword@localhost:5432/technopark-dbms

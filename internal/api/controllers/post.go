@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"strconv"
 
+	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/senago/technopark-dbms/internal/customtypes"
 	"github.com/senago/technopark-dbms/internal/model/dto"
@@ -18,7 +18,7 @@ type PostsController struct {
 
 func (c *PostsController) CreatePosts(ctx *fiber.Ctx) error {
 	posts := []*dto.PostData{}
-	if err := json.Unmarshal(ctx.Body(), &posts); err != nil {
+	if err := sonic.Unmarshal(ctx.Body(), &posts); err != nil {
 		return err
 	}
 
@@ -61,7 +61,7 @@ func (c *PostsController) GetPostDetails(ctx *fiber.Ctx) error {
 func (c *PostsController) UpdatePost(ctx *fiber.Ctx) error {
 	id, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
 	request := &dto.UpdatePostRequest{ID: id}
-	if err := Bind(ctx, request); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		return err
 	}
 

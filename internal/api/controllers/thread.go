@@ -16,7 +16,7 @@ type ForumThreadController struct {
 
 func (c *ForumThreadController) CreateForumThread(ctx *fiber.Ctx) error {
 	request := &dto.CreateForumThreadRequest{Forum: ctx.Params("slug")}
-	if err := Bind(ctx, request); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		return err
 	}
 
@@ -30,7 +30,7 @@ func (c *ForumThreadController) CreateForumThread(ctx *fiber.Ctx) error {
 
 func (c *ForumThreadController) UpdateVote(ctx *fiber.Ctx) error {
 	request := &dto.UpdateVoteRequest{}
-	if err := Bind(ctx, request); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		return err
 	}
 
@@ -56,7 +56,7 @@ func (c *ForumThreadController) GetForumThreadDetails(ctx *fiber.Ctx) error {
 
 func (c *ForumThreadController) UpdateForumThread(ctx *fiber.Ctx) error {
 	request := &dto.UpdateForumThreadRequest{}
-	if err := Bind(ctx, request); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		return err
 	}
 	slugOrID := ctx.Params("slug_or_id")

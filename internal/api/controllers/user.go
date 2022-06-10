@@ -16,7 +16,7 @@ type UserController struct {
 
 func (c *UserController) CreateUser(ctx *fiber.Ctx) error {
 	request := &dto.CreateUserRequest{Nickname: ctx.Params("nickname")}
-	if err := Bind(ctx, request); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		return err
 	}
 
@@ -41,7 +41,7 @@ func (c *UserController) GetUserProfile(ctx *fiber.Ctx) error {
 
 func (c *UserController) UpdateUserProfile(ctx *fiber.Ctx) error {
 	request := &dto.UpdateUserProfileRequest{Nickname: ctx.Params("nickname")}
-	if err := Bind(ctx, request); err != nil {
+	if err := ctx.BodyParser(request); err != nil {
 		return err
 	}
 

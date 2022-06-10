@@ -1,4 +1,3 @@
-//go:generate mockgen -source=user_test.go -destination=user_mock.go -package=service
 package service
 
 import (
