@@ -27,7 +27,6 @@ func NewAPIService(log *customtypes.Logger, dbConn *customtypes.DBConn) (*APISer
 	svc := &APIService{
 		log: log,
 		router: fiber.New(fiber.Config{
-			Prefork:     true,
 			JSONEncoder: sonic.Marshal,
 			JSONDecoder: sonic.Unmarshal,
 		}),

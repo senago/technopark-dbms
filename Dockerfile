@@ -1,11 +1,11 @@
-FROM golang:1.18-bullseye as builder
+FROM golang:1.18-alpine as builder
 
 WORKDIR /app
 
 COPY . ./
 RUN go build -o main cmd/main.go
 
-FROM ubuntu:bionic as exec
+FROM alpine:latest as exec
 
 WORKDIR /cmd
 

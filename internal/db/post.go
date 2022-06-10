@@ -45,7 +45,7 @@ func (repo *postsRepositoryImpl) CreatePosts(ctx context.Context, forum string, 
 
 	queryArgs := make([]interface{}, 0, 0)
 	newPosts := make([]*core.Post, 0, len(posts))
-	insertTime := time.Now()
+	insertTime := time.Unix(0, time.Now().UnixNano()/1e6*1e6)
 	for i, post := range posts {
 		p := &core.Post{Parent: post.Parent, Author: post.Author, Message: post.Message, Forum: forum, Thread: thread, Created: insertTime}
 		newPosts = append(newPosts, p)
