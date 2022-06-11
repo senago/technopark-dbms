@@ -41,24 +41,24 @@ type postsRepositoryImpl struct {
 }
 
 func (repo *postsRepositoryImpl) CreatePosts(ctx context.Context, forum string, thread int64, posts []*dto.PostData) ([]*core.Post, error) {
-	query := "INSERT INTO posts (parent, author, message, forum, thread, created) VALUES "
+	query := strings.Builder{}
+	query.WriteString("INSERT INTO posts (parent, author, message, forum, thread, created) VALUES ")
 
-	queryArgs := make([]interface{}, 0, 0)
+	queryArgs := make([]interface{}, 0, len(posts))
 	newPosts := make([]*core.Post, 0, len(posts))
 	insertTime := time.Unix(0, time.Now().UnixNano()/1e6*1e6)
 	for i, post := range posts {
 		p := &core.Post{Parent: post.Parent, Author: post.Author, Message: post.Message, Forum: forum, Thread: thread, Created: insertTime}
 		newPosts = append(newPosts, p)
-
-		query += fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d),", i*6+1, i*6+2, i*6+3, i*6+4, i*6+5, i*6+6)
-
+		fmt.Fprintf(&query, "($%d, $%d, $%d, $%d, $%d, $%d),", i*6+1, i*6+2, i*6+3, i*6+4, i*6+5, i*6+6)
 		queryArgs = append(queryArgs, post.Parent, post.Author, post.Message, forum, thread, insertTime)
 	}
 
-	query = query[:len(query)-1] // get rid of last comma
-	query += " RETURNING id;"
+	qs := query.String()
+	qs = qs[:len(qs)-1]
+	qs += " RETURNING id;"
 
-	rows, err := repo.dbConn.Query(ctx, query, queryArgs...)
+	rows, err := repo.dbConn.Query(ctx, qs, queryArgs...)
 	if err != nil {
 		return nil, err
 	}

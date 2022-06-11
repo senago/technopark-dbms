@@ -3,7 +3,7 @@ FROM golang:latest AS builder
 WORKDIR /app
 
 COPY . ./
-RUN go build ./cmd/main.go
+RUN GOAMD64=v3 go build -ldflags "-w -s" ./cmd/main.go
 
 FROM ubuntu:20.04
 
