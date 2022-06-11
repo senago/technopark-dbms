@@ -136,12 +136,10 @@ CREATE INDEX IF NOT EXISTS user_nickname_email ON users (nickname, email); -- Ge
 
 CREATE INDEX IF NOT EXISTS forum_slug_hash ON forums using hash (slug); -- common, with hash faster than with default b-tree
 
-CREATE INDEX IF NOT EXISTS thread_created ON threads (created); -- common
 CREATE INDEX IF NOT EXISTS thread_slug_hash ON threads using hash (slug); -- common
 CREATE INDEX IF NOT EXISTS thread_forum_hash ON threads using hash (forum); -- common
 CREATE INDEX IF NOT EXISTS thread_forum_created ON threads (forum, created); -- GetForumThreads
 
-CREATE INDEX IF NOT EXISTS post_thread_hash ON posts (thread); -- common
 CREATE INDEX IF NOT EXISTS post_thread_path ON posts (thread, path); -- GetPostsFlat (first column), GetPostsTree, GetPostsParentTree
 CREATE INDEX IF NOT EXISTS post_path_complex ON posts ((path[1]), path); -- GetPostsParentTree, crucial
 
