@@ -14,7 +14,7 @@ const (
 	queryGetUserByNickname         = "SELECT nickname, fullname, about, email FROM users where nickname = $1;"
 	queryGetUsersByEmailOrNickname = "SELECT nickname, fullname, about, email FROM users WHERE email = $1 OR nickname = $2;"
 
-	queryUpdateUser = "UPDATE users SET fullname = COALESCE(NULLIF(TRIM($1), ''), fullname), about = COALESCE(NULLIF(TRIM($2), ''), about), email = COALESCE(NULLIF(TRIM($3), ''), email) where nickname = $4 RETURNING fullname, about, email;"
+	queryUpdateUser = "UPDATE users SET fullname = COALESCE(NULLIF(TRIM($1), ''), fullname), about = COALESCE(NULLIF(TRIM($2), ''), about), email = COALESCE(NULLIF(TRIM($3), ''), email) WHERE nickname = $4 RETURNING fullname, about, email;"
 )
 
 type UserRepository interface {

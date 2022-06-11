@@ -131,30 +131,22 @@ CREATE TRIGGER update_forum_users_on_thread AFTER INSERT ON threads FOR EACH ROW
 
 -- Indexes
 
-CREATE INDEX IF NOT EXISTS user_nickname_hash ON users using hash (nickname);
-CREATE INDEX IF NOT EXISTS user_more ON users (nickname, fullname, about, email);
+CREATE INDEX IF NOT EXISTS user_nickname_hash ON users using hash (nickname); -- common, with hash faster than with default b-tree
+CREATE INDEX IF NOT EXISTS user_nickname_email ON users (nickname, email); -- GetUsersByEmailOrNickname
 
-CREATE INDEX IF NOT EXISTS forum_slug_hash ON forums using hash (slug);
-CREATE INDEX IF NOT EXISTS forum_user_hash ON forums using hash ("user");
+CREATE INDEX IF NOT EXISTS forum_slug_hash ON forums using hash (slug); -- common, with hash faster than with default b-tree
 
-CREATE INDEX IF NOT EXISTS thread_created ON threads (created);
-CREATE INDEX IF NOT EXISTS thread_slug_hash ON threads using hash (slug);
-CREATE INDEX IF NOT EXISTS thread_forum_hash ON threads using hash (forum);
-CREATE INDEX IF NOT EXISTS thread_author_hash ON threads using hash (author);
-CREATE INDEX IF NOT EXISTS thread_forum_created ON threads (forum, created);
+CREATE INDEX IF NOT EXISTS thread_created ON threads (created); -- common
+CREATE INDEX IF NOT EXISTS thread_slug_hash ON threads using hash (slug); -- common
+CREATE INDEX IF NOT EXISTS thread_forum_hash ON threads using hash (forum); -- GetForumThreads
 
-CREATE INDEX IF NOT EXISTS post_thread_hash ON posts using hash (thread);
-CREATE INDEX IF NOT EXISTS post_parent ON posts (thread, id, (path[1]), parent);
-CREATE INDEX IF NOT EXISTS post_thread_path ON posts (thread, path);
-CREATE INDEX IF NOT EXISTS post_path_complex ON posts ((path[1]), path);
+CREATE INDEX IF NOT EXISTS post_thread_path ON posts (thread, path); -- GetPostsFlat (first column), GetPostsTree, GetPostsParentTree
+CREATE INDEX IF NOT EXISTS post_path_complex ON posts ((path[1]), path); -- GetPostsParentTree, crucial
 
-CREATE INDEX IF NOT EXISTS forum_users_forum ON forum_users (forum);
-CREATE INDEX IF NOT EXISTS forum_users_nickname ON forum_users (nickname);
-CREATE INDEX IF NOT EXISTS forum_users_less ON forum_users (forum, nickname);
-CREATE INDEX IF NOT EXISTS forum_users_more ON forum_users (nickname, fullname, about, email);
+CREATE INDEX IF NOT EXISTS forum_users_forum_hash ON forum_users (forum, nickname); -- GetForumUsers
 
-CREATE UNIQUE INDEX IF NOT EXISTS votes_less ON votes (nickname, thread);
-CREATE UNIQUE INDEX IF NOT EXISTS votes_more ON votes (nickname, thread, voice);
+CREATE UNIQUE INDEX IF NOT EXISTS votes_less ON votes (nickname, thread); -- VoteExists
+CREATE UNIQUE INDEX IF NOT EXISTS votes_more ON votes (nickname, thread, voice); -- UpdateVote
 
 -- Vacuum for better performance
 VACUUM ANALYZE;
