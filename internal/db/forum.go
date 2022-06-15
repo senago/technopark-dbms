@@ -46,7 +46,7 @@ func (repo *forumRepositoryImpl) GetForumUsers(ctx context.Context, slug string,
 	}
 	defer rows.Close()
 
-	users := make([]*core.User, 0, limit)
+	users := make([]*core.User, 0, rows.CommandTag().RowsAffected())
 	for rows.Next() {
 		u := &core.User{}
 		if err := rows.Scan(&u.Nickname, &u.Fullname, &u.About, &u.Email); err != nil {
@@ -91,7 +91,7 @@ func (repo *forumRepositoryImpl) GetForumThreads(ctx context.Context, slug strin
 	}
 	defer rows.Close()
 
-	threads := make([]*core.Thread, 0, limit)
+	threads := make([]*core.Thread, 0, rows.CommandTag().RowsAffected())
 	for rows.Next() {
 		t := &core.Thread{}
 		if err := rows.Scan(&t.ID, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &t.Slug, &t.Created); err != nil {

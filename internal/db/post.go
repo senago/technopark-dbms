@@ -110,7 +110,7 @@ func (repo *postsRepositoryImpl) GetPostsFlat(ctx context.Context, id int, since
 	}
 	defer rows.Close()
 
-	posts := make([]*core.Post, 0, limit)
+	posts := make([]*core.Post, 0, rows.CommandTag().RowsAffected())
 	for rows.Next() {
 		post := &core.Post{}
 		if err := rows.Scan(&post.ID, &post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread, &post.Created); err != nil {
@@ -148,7 +148,7 @@ func (repo *postsRepositoryImpl) GetPostsTree(ctx context.Context, id int, since
 	}
 	defer rows.Close()
 
-	posts := make([]*core.Post, 0, limit)
+	posts := make([]*core.Post, 0, rows.CommandTag().RowsAffected())
 	for rows.Next() {
 		post := &core.Post{}
 		if err := rows.Scan(&post.ID, &post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread, &post.Created); err != nil {
@@ -198,7 +198,7 @@ func (repo *postsRepositoryImpl) GetPostsParentTree(ctx context.Context, id int,
 	}
 	defer rows.Close()
 
-	posts := make([]*core.Post, 0, limit)
+	posts := make([]*core.Post, 0, rows.CommandTag().RowsAffected())
 	for rows.Next() {
 		post := &core.Post{}
 		if err := rows.Scan(&post.ID, &post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum, &post.Thread, &post.Created); err != nil {

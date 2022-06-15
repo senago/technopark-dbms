@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
 	"github.com/senago/technopark-dbms/internal/constants"
 	"github.com/senago/technopark-dbms/internal/customtypes"
 	"github.com/senago/technopark-dbms/internal/db"
@@ -53,16 +51,21 @@ func (svc *userServiceImpl) GetUserProfile(ctx context.Context, request *dto.Get
 }
 
 func (svc *userServiceImpl) UpdateUserProfile(ctx context.Context, request *dto.UpdateUserProfileRequest) (*dto.Response, error) {
+	if len(request.Email) > 0 {
+		if user, err := svc.db.UserRepository.GetUserByEmail(ctx, request.Email); err != nil {
+			if !errors.Is(err, constants.ErrDBNotFound) {
+				return nil, err
+			}
+		} else if user.Nickname != request.Nickname {
+			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("This email is already registered by user: %s", user.Nickname)}, Code: http.StatusConflict}, nil
+		}
+	}
+
 	user := &core.User{Nickname: request.Nickname, Fullname: request.Fullname, About: request.About, Email: request.Email}
 	updatedUser, err := svc.db.UserRepository.UpdateUser(ctx, user)
 	if err != nil {
 		if errors.Is(err, constants.ErrDBNotFound) {
 			return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("Can't find user by nickname: %s", request.Nickname)}, Code: http.StatusNotFound}, nil
-		} else {
-			var pgErr *pgconn.PgError
-			if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-				return &dto.Response{Data: dto.ErrorResponse{Message: fmt.Sprintf("This email is already registered by user: %s", request.Nickname)}, Code: http.StatusConflict}, nil
-			}
 		}
 		return nil, err
 	}
