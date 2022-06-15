@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"github.com/senago/technopark-dbms/internal/customtypes"
 	"github.com/senago/technopark-dbms/internal/model/core"
 	"github.com/senago/technopark-dbms/internal/model/dto"

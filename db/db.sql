@@ -136,7 +136,7 @@ CREATE INDEX IF NOT EXISTS user_nickname_email ON users (nickname, email); -- Ge
 
 CREATE INDEX IF NOT EXISTS forum_slug_hash ON forums using hash (slug); -- common, with hash faster than with default b-tree
 
-CREATE INDEX IF NOT EXISTS thread_slug_hash ON threads using hash (slug); -- common
+CREATE INDEX IF NOT EXISTS thread_slug_hash ON threads using hash (slug); -- GetForumThreadBySlug
 CREATE INDEX IF NOT EXISTS thread_forum_hash ON threads using hash (forum); -- common
 CREATE INDEX IF NOT EXISTS thread_forum_created ON threads (forum, created); -- GetForumThreads
 

@@ -7,11 +7,10 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/spf13/viper"
 
 	"go.uber.org/zap"
-
-	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/senago/technopark-dbms/internal/api"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"github.com/senago/technopark-dbms/internal/customtypes"
 	"github.com/senago/technopark-dbms/internal/model/core"
 )
@@ -46,7 +46,7 @@ func (repo *forumRepositoryImpl) GetForumUsers(ctx context.Context, slug string,
 	}
 	defer rows.Close()
 
-	users := []*core.User{}
+	users := make([]*core.User, 0, limit)
 	for rows.Next() {
 		u := &core.User{}
 		if err := rows.Scan(&u.Nickname, &u.Fullname, &u.About, &u.Email); err != nil {
@@ -91,7 +91,7 @@ func (repo *forumRepositoryImpl) GetForumThreads(ctx context.Context, slug strin
 	}
 	defer rows.Close()
 
-	threads := []*core.Thread{}
+	threads := make([]*core.Thread, 0, limit)
 	for rows.Next() {
 		t := &core.Thread{}
 		if err := rows.Scan(&t.ID, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &t.Slug, &t.Created); err != nil {
